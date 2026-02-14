@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Little Pinky's Adventure – A Short Pixar-Style Movie for Kids</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+    <style>
+      body { margin: 0; padding: 0; overflow: hidden; background: #87CEEB; }
+      canvas { display: block; }
+    </style>
+  </head>
+  <body>
+    <script>
+      let time = 0;
+      let charX = -150;
+      let charY = 0;
+      let jump = 0;
+      let armAngle = 0;
+      let scene = 0;
+      let sparkles = [];
+
+      function setup() {
+        createCanvas(windowWidth, windowHeight);
+        textAlign(CENTER, CENTER);
+      }
+
+      function draw() {
+        time++;
+        background(135, 206, 235); // sky blue
+
+        // Clouds
+        noStroke();
+        fill(255, 255, 255, 200);
+        ellipse(width * 0.2 + (time * 0.2) % (width + 200), height * 0.15, 120, 80);
+        ellipse(width * 0.6 + (time * 0.3) % (width + 200), height * 0.2, 150, 90);
+
+        // Ground
+        fill(34, 139, 34);
+        rect(0, height * 0.75, width, height * 0.25);
+
+        // Sun with smile
+        fill(255, 223, 0);
+        circle(width * 0.85, height * 0.15, 100);
+        stroke(0);
+        strokeWeight(4);
+        noFill();
+        arc(width * 0.85, height * 0.15, 60, 40, 0.2, PI - 0.2);
+
+        // Character base Y
+        charY = height * 0.75 - 80 - jump;
+
+        // Scenes
+        if (scene === 0) { // Title screen
+          textSize(50);
+          fill(255);
+          stroke(0);
+          strokeWeight(6);
+          text("Little Pinky's Adventure", width / 2, height / 2 - 50);
+          textSize(32);
+          text("A fun journey for kids!", width / 2, height / 2 + 20);
+          if (time > 180) {
+            scene = 1;
+            time = 0;
+          }
+        } else if (scene === 1) { // Walking in
+          charX += 3;
+          jump = abs(sin(time * 0.15)) * 30;
+          armAngle = sin(time * 0.2) * 0.3;
+
+          fill(0);
+          textSize(36);
+          noStroke();
+          text("Pinky is exploring the world!", width / 2, height * 0.9);
+
+          if (charX > width / 2) {
+            scene = 2;
+            time = 0;
+          }
+        } else if (scene === 2) { // Big jump + flower appear
+          jump = sin(time * 0.06) * 120;
+          if (time > 150) {
+            scene = 3;
+            // Spawn sparkles
+            for (let i = 0; i < 30; i++) {
+              sparkles.push({
+                x: width * 0.8 + random(-50, 50),
+                y: height * 0.65 + random(-50, 50),
+                size: random(5, 15),
+                alpha: 255
+              });
+            }
+          }
+
+          fill(0);
+          textSize(36);
+          text("Wow! A magical flower!", width / 2, height * 0.9);
+        } else if (scene >= 3) { // Happy dance forever
+          charX = width / 2 + sin(time * 0.1) * 30;
+          jump = abs(sin(time * 0.15)) * 60;
+          armAngle = sin(time * 0.3) * 0.8;
+
+          textSize(60);
+          fill(255, 255, 0);
+          stroke(0);
+          strokeWeight(5);
+          text("The End!", width / 2, height / 2 - 50);
+          textSize(40);
+          fill(255);
+          text("Thanks for watching! 🎉", width / 2, height / 2 + 20);
+        }
+
+        // Draw character (cute pink creature)
+        push();
+        translate(charX, charY);
+
+        // Body
+        fill(255, 105, 180); // hot pink
+        noStroke();
+        ellipse(0, 20, 90, 110);
+
+        // Head
+        circle(0, -30, 80);
+
+        // Eyes
+        fill(255);
+        ellipse(-20, -40, 25, 30);
+        ellipse(20, -40, 25, 30);
+        fill(0);
+        circle(-20, -40, 12);
+        circle(20, -40, 12);
+        fill(255);
+        circle(-23, -43, 6);
+        circle(17, -43, 6);
+
+        // Smile
+        noFill();
+        stroke(0);
+        strokeWeight(4);
+        arc(0, -20, 45, 35, 0.2, PI - 0.2);
+
+        // Arms (waving)
+        stroke(255, 105, 180);
+        strokeWeight(12);
+        rotate(armAngle);
+        line(-45, 10, -70, 40);
+        rotate(-armAngle * 2);
+        line(45, 10, 70, 40);
+
+        // Legs
+        noStroke();
+        fill(255, 105, 180);
+        ellipse(-20, 70, 30, 50);
+        ellipse(20, 70, 30, 50);
+
+        pop();
+
+        // Flower (appears in scene 2+)
+        if (scene >= 2) {
+          push();
+          translate(width * 0.8, height * 0.65);
+          // Stem
+          stroke(0, 128, 0);
+          strokeWeight(10);
+          line(0, 0, 0, 60);
+          // Petals
+          noStroke();
+          fill(255, 0, 255); // magenta
+          for (let i = 0; i < 8; i++) {
+            rotate(PI / 4);
+            ellipse(0, -30, 40, 80);
+          }
+          // Center
+          fill(255, 215, 0);
+          circle(0, 0, 50);
+          pop();
+        }
+
+        // Sparkles when flower is found
+        for (let i = sparkles.length - 1; i >= 0; i--) {
+          let s = sparkles[i];
+          fill(255, 255, 100, s.alpha);
+          noStroke();
+          ellipse(s.x, s.y, s.size);
+          s.alpha -= 4;
+          s.y -= 1;
+          if (s.alpha <= 0) sparkles.splice(i, 1);
+        }
+      }
+
+      function windowResized() {
+        resizeCanvas(windowWidth, windowHeight);
+      }
+    </script>
+  </body>
+</html>
