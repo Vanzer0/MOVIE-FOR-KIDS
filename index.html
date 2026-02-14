@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Little Pinky's Adventure – A Short Pixar-Style Movie for Kids</title>
+    <title>Little Pinky's Big Adventure – A Longer, More Fun Pixar-Style Short for Kids</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
     <style>
       body { margin: 0; padding: 0; overflow: hidden; background: #87CEEB; }
@@ -12,180 +12,373 @@
   </head>
   <body>
     <script>
-      let time = 0;
-      let charX = -150;
+      let globalTime = 0;
+      let charX = -200;
       let charY = 0;
       let jump = 0;
       let armAngle = 0;
       let scene = 0;
       let sparkles = [];
+      let confetti = [];
+      let hearts = [];
+      let butterflies = [];
+      let friendX = width + 200; // Blue friend
+      let friend2X = width + 400; // Green friend
+      let friendJump = 0;
+      let friend2Jump = 0;
 
       function setup() {
         createCanvas(windowWidth, windowHeight);
         textAlign(CENTER, CENTER);
+
+        // Create butterflies
+        for (let i = 0; i < 6; i++) {
+          butterflies.push({
+            x: random(width),
+            y: random(height * 0.1, height * 0.4),
+            phase: random(TWO_PI),
+            speed: random(0.5, 1.5)
+          });
+        }
       }
 
       function draw() {
-        time++;
-        background(135, 206, 235); // sky blue
+        globalTime++;
+        background(135, 206, 235); // Sky blue
 
-        // Clouds
+        // Moving clouds
         noStroke();
-        fill(255, 255, 255, 200);
-        ellipse(width * 0.2 + (time * 0.2) % (width + 200), height * 0.15, 120, 80);
-        ellipse(width * 0.6 + (time * 0.3) % (width + 200), height * 0.2, 150, 90);
+        fill(255, 255, 255, 180);
+        ellipse(width * 0.3 + (globalTime * 0.15) % (width + 300), height * 0.12, 140, 90);
+        ellipse(width * 0.7 + (globalTime * 0.25) % (width + 300), height * 0.18, 160, 100);
+        ellipse(width * 0.5 + (globalTime * 0.1) % (width + 300), height * 0.08, 120, 80);
+
+        // Distant mountains (fun background)
+        fill(100, 180, 100);
+        triangle(width * 0.2, height * 0.75, width * 0.4, height * 0.4, width * 0.6, height * 0.75);
+        fill(80, 160, 80);
+        triangle(width * 0.6, height * 0.75, width * 0.8, height * 0.45, width * 1.0, height * 0.75);
 
         // Ground
         fill(34, 139, 34);
         rect(0, height * 0.75, width, height * 0.25);
 
-        // Sun with smile
+        // Sun with eyes and bigger smile
         fill(255, 223, 0);
-        circle(width * 0.85, height * 0.15, 100);
+        circle(width * 0.85, height * 0.15, 120);
         stroke(0);
-        strokeWeight(4);
+        strokeWeight(5);
         noFill();
-        arc(width * 0.85, height * 0.15, 60, 40, 0.2, PI - 0.2);
+        arc(width * 0.85, height * 0.17, 80, 60, 0.1, PI - 0.1);
+        // Eyes
+        fill(0);
+        circle(width * 0.85 - 20, height * 0.13, 12);
+        circle(width * 0.85 + 20, height * 0.13, 12);
+
+        // Butterflies (always flying for extra fun)
+        for (let b of butterflies) {
+          push();
+          translate(b.x + sin(globalTime * b.speed * 0.05) * width * 0.4, b.y + sin(globalTime * 0.08 + b.phase) * 40);
+          // Body
+          fill(255, 150, 0);
+          ellipse(0, 0, 15, 40);
+          // Wings flapping
+          let wingAngle = sin(globalTime * 0.2 + b.phase) * 0.6;
+          fill(255, 100, 255, 200);
+          rotate(wingAngle);
+          ellipse(-20, 0, 40, 60);
+          rotate(-wingAngle * 2);
+          ellipse(20, 0, 40, 60);
+          pop();
+
+          // Slow drift
+          b.x += b.speed * 0.3;
+          if (b.x > width + 100) b.x = -100;
+        }
 
         // Character base Y
-        charY = height * 0.75 - 80 - jump;
+        let baseY = height * 0.75 - 80;
 
-        // Scenes
-        if (scene === 0) { // Title screen
-          textSize(50);
-          fill(255);
+        // Scenes (now much longer – full story ~90–120 seconds before looping happy ending)
+        if (scene === 0) { // Longer title with twinkles
+          textSize(56);
+          fill(255, 255, 255);
+          stroke(255, 200, 0);
+          strokeWeight(8);
+          text("Little Pinky's Big Adventure!", width / 2, height / 2 - 80);
+          textSize(40);
           stroke(0);
-          strokeWeight(6);
-          text("Little Pinky's Adventure", width / 2, height / 2 - 50);
+          strokeWeight(4);
+          text("A super fun journey with friends! 🌈", width / 2, height / 2);
           textSize(32);
-          text("A fun journey for kids!", width / 2, height / 2 + 20);
-          if (time > 180) {
-            scene = 1;
-            time = 0;
+          text("Get ready for magic! ✨", width / 2, height / 2 + 80);
+
+          // Twinkle sparkles on title
+          if (globalTime % 30 === 0) {
+            sparkles.push({x: random(width), y: random(height * 0.3, height * 0.6), size: random(10, 20), alpha: 255});
           }
-        } else if (scene === 1) { // Walking in
-          charX += 3;
-          jump = abs(sin(time * 0.15)) * 30;
-          armAngle = sin(time * 0.2) * 0.3;
+
+          if (globalTime > 600) { // ~10 seconds
+            scene = 1;
+          }
+        } else if (scene === 1) { // Slow, bouncy exploring walk
+          charX += 1.8; // Slower for longer scene
+          jump = abs(sin(globalTime * 0.12)) * 40;
+          armAngle = sin(globalTime * 0.2) * 0.4;
 
           fill(0);
-          textSize(36);
+          textSize(38);
           noStroke();
-          text("Pinky is exploring the world!", width / 2, height * 0.9);
+          text("Pinky is exploring the big green world! 🐾", width / 2, height * 0.9);
 
-          if (charX > width / 2) {
+          if (charX > width * 0.65) {
             scene = 2;
-            time = 0;
           }
-        } else if (scene === 2) { // Big jump + flower appear
-          jump = sin(time * 0.06) * 120;
-          if (time > 150) {
-            scene = 3;
-            // Spawn sparkles
-            for (let i = 0; i < 30; i++) {
+        } else if (scene === 2) { // Big excited jumps toward magical flower
+          jump = sin(globalTime * 0.08) * 150; // Higher, slower jumps
+          armAngle = sin(globalTime * 0.3) * 0.8;
+
+          fill(0);
+          textSize(40);
+          text("Wow! Look at that sparkling flower! 🌸✨", width / 2, height * 0.9);
+
+          // Spawn sparkles around flower early
+          if (globalTime % 20 === 0) {
+            sparkles.push({
+              x: width * 0.85 + random(-80, 80),
+              y: height * 0.65 + random(-80, 80),
+              size: random(8, 20),
+              alpha: 255
+            });
+          }
+
+          if (globalTime % 100 > 90) { // Big sparkle burst
+            for (let i = 0; i < 20; i++) {
               sparkles.push({
-                x: width * 0.8 + random(-50, 50),
-                y: height * 0.65 + random(-50, 50),
-                size: random(5, 15),
+                x: width * 0.85 + random(-60, 60),
+                y: height * 0.65 + random(-60, 60),
+                size: random(10, 25),
                 alpha: 255
               });
             }
           }
 
-          fill(0);
-          textSize(36);
-          text("Wow! A magical flower!", width / 2, height * 0.9);
-        } else if (scene >= 3) { // Happy dance forever
-          charX = width / 2 + sin(time * 0.1) * 30;
-          jump = abs(sin(time * 0.15)) * 60;
-          armAngle = sin(time * 0.3) * 0.8;
+          if (jump < 10 && globalTime % 200 > 180) { // Landed near flower → next scene
+            scene = 3;
+          }
+        } else if (scene === 3) { // Friends arrive one by one!
+          // Pinky small happy bounce
+          jump = abs(sin(globalTime * 0.2)) * 30;
 
-          textSize(60);
+          // Blue friend comes in
+          if (friendX > width / 2 + 100) friendX -= 2.5;
+          friendJump = abs(sin(globalTime * 0.15)) * 35;
+
+          // Green friend follows
+          if (friendX < width / 2 + 150 && friend2X > width / 2 - 100) friend2X -= 2.5;
+          friend2Jump = abs(sin(globalTime * 0.18)) * 40;
+
+          textSize(42);
+          fill(0);
+          text("Friends are coming to play! 🎉", width / 2, height * 0.9);
+
+          // Spawn hearts when friends arrive
+          if (friendX < width / 2 + 120 && globalTime % 25 === 0) {
+            hearts.push({x: random(width * 0.4, width * 0.6), y: height * 0.8, alpha: 255});
+          }
+
+          if (friend2X < width / 2 - 80) {
+            scene = 4;
+          }
+        } else if (scene >= 4) { // Big happy group dance + confetti forever!
+          // All characters bounce and spin
+          charX = width / 2 + sin(globalTime * 0.08) * 50;
+          jump = abs(sin(globalTime * 0.18)) * 70;
+          armAngle = sin(globalTime * 0.4) * 1.2;
+
+          friendX = width / 2 + 100 + sin(globalTime * 0.1) * 40;
+          friendJump = abs(sin(globalTime * 0.2)) * 60;
+
+          friend2X = width / 2 - 100 + sin(globalTime * 0.09) * 45;
+          friend2Jump = abs(sin(globalTime * 0.22)) * 65;
+
+          // Confetti rain
+          if (globalTime % 8 === 0) {
+            confetti.push({
+              x: random(width),
+              y: -20,
+              size: random(8, 18),
+              color: color(random(255), random(255), random(255)),
+              speed: random(2, 6),
+              spin: random(-0.1, 0.1)
+            });
+          }
+
+          // Big ending text
+          textSize(70);
           fill(255, 255, 0);
-          stroke(0);
-          strokeWeight(5);
-          text("The End!", width / 2, height / 2 - 50);
-          textSize(40);
+          stroke(255, 0, 255);
+          strokeWeight(8);
+          text("Happily Ever After!", width / 2, height / 2 - 80);
+          textSize(48);
           fill(255);
-          text("Thanks for watching! 🎉", width / 2, height / 2 + 20);
+          stroke(0);
+          strokeWeight(4);
+          text("Thanks for watching, friends! 💕🎈", width / 2, height / 2 + 20);
+          textSize(36);
+          text("Dance party forever! 🥳", width / 2, height / 2 + 100);
         }
 
-        // Draw character (cute pink creature)
-        push();
-        translate(charX, charY);
+        // Draw Pinky (main character)
+        drawCharacter(charX, baseY - jump, 255, 105, 180, armAngle);
 
-        // Body
-        fill(255, 105, 180); // hot pink
-        noStroke();
-        ellipse(0, 20, 90, 110);
+        // Draw blue friend (if in scene 3+)
+        if (scene >= 3) {
+          let blueArmAngle = sin(globalTime * 0.35) * 1.0;
+          drawCharacter(friendX, baseY - friendJump, 100, 150, 255, blueArmAngle);
+        }
 
-        // Head
-        circle(0, -30, 80);
+        // Draw green friend (if in scene 3+ and far enough)
+        if (scene >= 3 && friend2X < width + 100) {
+          let greenArmAngle = sin(globalTime * 0.38) * 1.1;
+          drawCharacter(friend2X, baseY - friend2Jump, 100, 220, 100, greenArmAngle);
+        }
 
-        // Eyes
-        fill(255);
-        ellipse(-20, -40, 25, 30);
-        ellipse(20, -40, 25, 30);
-        fill(0);
-        circle(-20, -40, 12);
-        circle(20, -40, 12);
-        fill(255);
-        circle(-23, -43, 6);
-        circle(17, -43, 6);
-
-        // Smile
-        noFill();
-        stroke(0);
-        strokeWeight(4);
-        arc(0, -20, 45, 35, 0.2, PI - 0.2);
-
-        // Arms (waving)
-        stroke(255, 105, 180);
-        strokeWeight(12);
-        rotate(armAngle);
-        line(-45, 10, -70, 40);
-        rotate(-armAngle * 2);
-        line(45, 10, 70, 40);
-
-        // Legs
-        noStroke();
-        fill(255, 105, 180);
-        ellipse(-20, 70, 30, 50);
-        ellipse(20, 70, 30, 50);
-
-        pop();
-
-        // Flower (appears in scene 2+)
+        // Magical flower (bigger and sparklier)
         if (scene >= 2) {
           push();
-          translate(width * 0.8, height * 0.65);
+          translate(width * 0.85, height * 0.65);
           // Stem
-          stroke(0, 128, 0);
-          strokeWeight(10);
-          line(0, 0, 0, 60);
-          // Petals
+          stroke(0, 160, 0);
+          strokeWeight(14);
+          line(0, 0, 0, 80);
+          // Petals (more colorful)
           noStroke();
-          fill(255, 0, 255); // magenta
-          for (let i = 0; i < 8; i++) {
-            rotate(PI / 4);
-            ellipse(0, -30, 40, 80);
+          for (let i = 0; i < 10; i++) {
+            rotate(PI / 5);
+            fill(lerpColor(color(255, 100, 255), color(255, 200, 100), i / 10));
+            ellipse(0, -40, 50, 100);
           }
-          // Center
-          fill(255, 215, 0);
-          circle(0, 0, 50);
+          // Center glow
+          fill(255, 255, 100);
+          circle(0, 0, 70);
           pop();
         }
 
-        // Sparkles when flower is found
+        // Sparkles
         for (let i = sparkles.length - 1; i >= 0; i--) {
           let s = sparkles[i];
-          fill(255, 255, 100, s.alpha);
+          fill(255, 255, 200, s.alpha);
           noStroke();
-          ellipse(s.x, s.y, s.size);
-          s.alpha -= 4;
-          s.y -= 1;
+          star(s.x, s.y, s.size / 2, s.size, 5);
+          s.alpha -= 6;
+          s.y -= 1.5;
           if (s.alpha <= 0) sparkles.splice(i, 1);
         }
+
+        // Hearts
+        for (let i = hearts.length - 1; i >= 0; i--) {
+          let h = hearts[i];
+          fill(255, 100, 150, h.alpha);
+          noStroke();
+          heartShape(h.x, h.y, 30);
+          h.y -= 2;
+          h.alpha -= 4;
+          if (h.alpha <= 0) hearts.splice(i, 1);
+        }
+
+        // Confetti
+        for (let i = confetti.length - 1; i >= 0; i--) {
+          let c = confetti[i];
+          push();
+          translate(c.x, c.y);
+          rotate(globalTime * c.spin);
+          fill(c.color);
+          noStroke();
+          rect(-c.size / 2, -c.size / 2, c.size, c.size);
+          pop();
+          c.y += c.speed;
+          c.spin += 0.05;
+          if (c.y > height + 50) confetti.splice(i, 1);
+        }
+      }
+
+      // Reusable character drawing function
+      function drawCharacter(x, y, r, g, b, armA) {
+        push();
+        translate(x, y);
+
+        // Body
+        fill(r, g, b);
+        noStroke();
+        ellipse(0, 20, 100, 120);
+
+        // Head
+        circle(0, -35, 90);
+
+        // Eyes (bigger, sparkly)
+        fill(255);
+        ellipse(-25, -45, 30, 40);
+        ellipse(25, -45, 30, 40);
+        fill(0);
+        circle(-25, -45, 15);
+        circle(25, -45, 15);
+        fill(255);
+        circle(-28, -48, 8);
+        circle(22, -48, 8);
+
+        // Happy smile
+        noFill();
+        stroke(0);
+        strokeWeight(5);
+        arc(0, -20, 55, 45, 0.15, PI - 0.15);
+
+        // Blush cheeks for extra cuteness
+        noStroke();
+        fill(255, 150, 180, 150);
+        ellipse(-30, -20, 25, 20);
+        ellipse(30, -20, 25, 20);
+
+        // Waving arms
+        stroke(r, g, b);
+        strokeWeight(15);
+        rotate(armA);
+        line(-50, 10, -80, 50);
+        rotate(-armA * 2);
+        line(50, 10, 80, 50);
+
+        // Legs
+        noStroke();
+        fill(r, g, b);
+        ellipse(-25, 75, 35, 60);
+        ellipse(25, 75, 35, 60);
+
+        pop();
+      }
+
+      // Star shape for sparkles
+      function star(x, y, radius1, radius2, npoints) {
+        let angle = TWO_PI / npoints;
+        let halfAngle = angle / 2;
+        beginShape();
+        for (let a = 0; a < TWO_PI; a += angle) {
+          let sx = x + cos(a) * radius2;
+          let sy = y + sin(a) * radius2;
+          vertex(sx, sy);
+          sx = x + cos(a + halfAngle) * radius1;
+          sy = y + sin(a + halfAngle) * radius1;
+          vertex(sx, sy);
+        }
+        endShape(CLOSE);
+      }
+
+      // Heart shape
+      function heartShape(x, y, size) {
+        beginShape();
+        vertex(x, y + size / 4);
+        bezierVertex(x - size / 2, y - size / 2, x - size, y + size / 4, x, y + size);
+        bezierVertex(x + size, y + size / 4, x + size / 2, y - size / 2, x, y + size / 4);
+        endShape(CLOSE);
       }
 
       function windowResized() {
